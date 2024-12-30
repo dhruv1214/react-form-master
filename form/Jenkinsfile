@@ -1,0 +1,91 @@
+pipeline{
+    agent any
+    // tools{
+    //     nodejs 'node23.5.0'
+    // }
+    
+     environment {
+         SCANNER_HOME=tool 'sonar-scanner'
+          // Nexus repository URL and npm repository details
+        NEXUS_URL = "http://localhost:8081/repository/reactForm/"
+        NEXUS_REPO = "reactForm"
+        NEXUS_CREDENTIALS_ID = "nexus" // Credentials in Jenkins
+        PACKAGE_NAME = "reactForm"
+        
+         
+         
+    }
+    stages {
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main' , credentialsId: 'git-cred' , url: 'https://github.com/dhruv1214/react-form-master.git'
+            }
+        }
+          stage('File System Scan') {
+            steps {
+                echo 'Trivy Scan Started'
+                sh 'trivy fs --format table --output trivy-fs-output.html .'
+                echo 'Trivy Scan Finished'
+            }
+        }
+              stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-scanner') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=ReactForm \
+                    -Dsonar.projectKey=ReactForm '''
+                }
+            }
+            
+        }
+         stage("quality gate"){
+           steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonartoken' 
+                }
+            } 
+        }
+          
+         stage('Install Dependencies') {
+            steps {
+         dir('form') {
+                sh "npm install --force"
+            }
+            }
+        }
+        stage('Build React App') {
+            steps {
+                dir('form') {
+                sh 'npm run build'
+                }
+            }
+        }
+         stage('Publish to Nexus') {
+            steps {
+                script {
+                      dir('form') {
+                          echo ' pack started'
+                          sh 'npm pack'
+                          echo 'pack finished'
+                    // Use Jenkins credentials for authentication
+                    echo 'publishing started'
+                   nexusArtifactUploader credentialsId: 'nexus', groupId: 'myorg', nexusUrl: '127.0.0.1:8081', nexusVersion: 'nexus2', protocol: 'http', repository: 'reactForm', version: '0.1.0'
+
+                        echo 'publishing failed'
+                        // Publish npm package to Nexus
+                        sh 'npm publish'
+                        
+                        echo 'publishing finished'
+                    }
+                 }
+             }
+            
+        }
+
+
+    }
+}
