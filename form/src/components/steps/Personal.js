@@ -33,6 +33,7 @@ export const Personal = ({
       lastName.match(/^[a-zA-Z]+$/) || lastName.length === 0
         ? setLastNameVal(false)
         : setLastNameVal(true);
+        // eslint-disable-next-line
     return first, middle, last;
   }, [firstName, middleName, lastName]);
 

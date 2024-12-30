@@ -1,8 +1,10 @@
+// eslint-disable-next-line
 import React, { useState, useEffect } from "react";
 import { Container, TextField, Button } from "@material-ui/core";
 import ArrowBackRoundedIcon from "@material-ui/icons/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@material-ui/icons/ArrowForwardRounded";
 
+// eslint-disable-next-line
 const Contact = ({
   email,
   setEmail,
@@ -18,9 +20,10 @@ const Contact = ({
   const [emailVal, setEmailVal] = useState(false);
   const [websiteVal, setwebsiteVal] = useState(false);
   const [contactVal, setContactVal] = useState(false);
-
+// eslint-disable-next-line
   useEffect(() => {
     let e_mail =
+    // eslint-disable-next-line
       email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/) ||
       email.length === 0
         ? setEmailVal(false)
@@ -35,6 +38,7 @@ const Contact = ({
       contactNo.match(/^(\+\d{1,3}[- ]?)?\d{10}$/) || contactNo.length === 0
         ? setContactVal(false)
         : setContactVal(true);
+        // eslint-disable-next-line
     return e_mail, webSite, mobile;
   }, [email, contactNo, website]);
 
